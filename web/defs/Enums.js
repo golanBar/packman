@@ -1,0 +1,77 @@
+/**
+ * Created by Golan Bar on 20-Jun-15.
+ */
+var TileType = {
+    WALL_VER: 0,
+    WALL_HOR: 1,
+    WALL_CORNER_BL: 2,
+    WALL_CORNER_BR: 3,
+    WALL_CORNER_TL: 4,
+    WALL_CORNER_TR: 5,
+    WALL_END_UP: 6,
+    WALL_END_DOWN: 7,
+    WALL_END_RIGHT: 8,
+    WALL_END_LEFT: 9,
+    GATE: 10,
+    COIN: 11,
+    POWER: 12,
+    ANTI_SPEED: 13,
+    SPEED: 14,
+    SURPRISE: 15,
+    PACMAN_START: 16,
+    GHOST_START: 17,
+    PASSAGE: 18,
+    EMPTY: 19
+};
+
+var Direction = {
+    DIR_LEFT: 0,
+    DIR_RIGHT: 1,
+    DIR_UP: 2,
+    DIR_DOWN: 3,
+    DIR_NONE: 4,
+    DIR_MAX: 5
+};
+
+var TileState = {
+    TILE_NOT_FREE: 0,
+    TILE_FREE: 1,
+    TILE_GATE: 2
+};
+
+var GhostState = {
+    GHOST_STRAY: 0,
+    GHOST_CHASE: 1,
+    GHOST_ESCAPE: 2,
+    GHOST_STOP_ESCAPE: 3,
+    GHOST_DEAD: 4,
+    GHOST_STAY_AT_HOME: 5,
+    GHOST_GO_BACK_HOME: 6
+};
+
+var GameState = {
+    GAME_RUN: 0,
+    GAME_OVER: 1,
+    GAME_PACKMAN_POWER: 2,
+    GAME_PACKMAN_CHASE: 3,
+    GAME_PACKMAN_KILLED: 4,
+    GAME_LEVEL_COMPLETED: 5,
+    GAME_COMPLETED: 6
+
+};
+
+var AudioType = {
+    AUDIO_COIN: 0,
+    AUDIO_POWER: 1,
+    AUDIO_SURPRISE: 2,
+    AUDIO_SPEED: 3,
+    AUDIO_ANTI_SPEED: 4,
+    AUDIO_EXTRA_LIFE: 5,
+    AUDIO_GAME_OVER: 6,
+    AUDIO_GAME_COMPLETE: 7,
+    AUDIO_START_LEVEL: 8,
+    AUDIO_LEVEL_OVER: 9,
+    AUDIO_KILL_GHOST: 10,
+    AUDIO_PACKMAN_KILLED: 11,
+    AUDIO_MAX: 12
+};
