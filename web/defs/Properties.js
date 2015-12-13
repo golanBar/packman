@@ -10,7 +10,7 @@ var Properties = {
     MAZE_RECT: {x:40, y:120, width:670, height:550},
 
     /* packMan */
-    PACKMAN_LIVES: 10,
+    PACKMAN_LIVES: 1,
     PACKMAN_SPEED: {normal:7, speedPill:4, antiSpeedPill:7},
 
     /* ghosts */

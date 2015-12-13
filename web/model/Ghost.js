@@ -4,57 +4,97 @@
 /**
  * Created by Golan Bar on 17-Jun-15.
  */
-var Ghost = function() {
-    this.img = new Image();
-    this.imgIndex = 0;
-    this.sprite = new Sprite();
-    this.startPos;
-    this.state;
-
-    this.init = function(speed) {
-        this.sprite.init(this.startPos, speed, true);
+var Ghost = Entity.extend({
+    init: function() {
+        this._super();
+        this.loadImages();
+    },
+    loadImages: function() {
+        this.ghostImgs = [];
+        this.ghostKilledImgs = [];
+        this.ghostEscapeImgs = [];
+        this.ghostStopEscapeImgs = [];
+        for(var i=0; i<2; i++) {
+            this.ghostImgs[i] = new Image();
+            this.ghostImgs[i].src = 'images/ghost' + i + '.png';
+        }
+        for(var i=0; i<2; i++) {
+            this.ghostKilledImgs[i] = new Image();
+            this.ghostKilledImgs[i].src = 'images/ghost_killed' + i + '.png';
+        }
+        for(var i=0; i<2; i++) {
+            this.ghostEscapeImgs[i] = new Image();
+            this.ghostEscapeImgs[i].src = 'images/ghost_escape' + i + '.png';
+        }
+        for(var i=0; i<2; i++) {
+            this.ghostStopEscapeImgs[i] = new Image();
+            this.ghostStopEscapeImgs[i].src = 'images/ghost_stop_escape' + i + '.png';
+        }
+    },
+    reset: function(speed) {
         this.state = GhostState.GHOST_STAY_AT_HOME;
-    };
-    this.draw = function(context) {
-        var deltaPos = this.sprite.getDeltaPos();
-        deltaPos.x = deltaPos.x * Properties.TILE_HEIGHT + Properties.MAZE_RECT.x;
-        deltaPos.y = deltaPos.y * Properties.TILE_WIDTH + Properties.MAZE_RECT.y;
-
-        var imgIndexStr = this.imgIndex < Properties.CHANGE_IMG_DURATION ? '0' : '1';
+        this.resetSprite(speed, true);
+        this.setImgIndex(0);
+    },
+    draw: function(context) {
+        var pos = this.getNewPos();
+        var imgIndex = this.getImgIndex();
+        var i = imgIndex < Properties.CHANGE_IMG_DURATION ? 0:1;
         switch(this.state) {
             case GhostState.GHOST_ESCAPE:
-                this.img.src = 'images/ghost_escape' + imgIndexStr + '.png';
+                context.drawImage(this.ghostEscapeImgs[i],  pos.x, pos.y);
                 break;
             case GhostState.GHOST_STOP_ESCAPE:
-                this.img.src = 'images/ghost_stop_escape' + imgIndexStr + '.png';
+                context.drawImage(this.ghostStopEscapeImgs[i],  pos.x, pos.y);
                 break;
             case GhostState.GHOST_DEAD:
-                this.img.src = 'images/ghost_killed' + imgIndexStr + '.png';
+                context.drawImage(this.ghostKilledImgs[i],  pos.x, pos.y);
                 break;
             default:
-                this.img.src = 'images/ghost' + imgIndexStr + '.png';
+                context.drawImage(this.ghostImgs[i],  pos.x, pos.y);
                 break;
         }
-        if(++this.imgIndex >= Properties.CHANGE_IMG_DURATION * 2)
-            this.imgIndex = 0;
+        this.setImgIndex(this.getImgIndex()+1);
+        if(this.getImgIndex() >= Properties.CHANGE_IMG_DURATION * 2)
+            this.setImgIndex(0);
+    },
+    /*draw: function(context) {
+        var imgIndexStr = this.getImgIndex() < Properties.CHANGE_IMG_DURATION ? '0' : '1';
+        switch(this.state) {
+            case GhostState.GHOST_ESCAPE:
+                this.setImgSrc('images/ghost_escape' + imgIndexStr + '.png');
+                break;
+            case GhostState.GHOST_STOP_ESCAPE:
+                this.setImgSrc('images/ghost_stop_escape' + imgIndexStr + '.png');
+                break;
+            case GhostState.GHOST_DEAD:
+                this.setImgSrc('images/ghost_killed' + imgIndexStr + '.png');
+                break;
+            default:
+                this.setImgSrc('images/ghost' + imgIndexStr + '.png');
+                break;
+        }
+        this.setImgIndex(this.getImgIndex()+1);
+        if(this.getImgIndex() >= Properties.CHANGE_IMG_DURATION * 2)
+            this.setImgIndex(0);
 
-        context.drawImage(this.img, deltaPos.x, deltaPos.y);
-    };
-    this.setStartPos = function(x, y) {
-        this.startPos = new Point(x, y);
+        this._super(context);
+    },*/
+    setStartPos: function(x, y) {
         //randomize the start position to make sure not all ghost objects start from the same exact position
         var rand = Math.random();
-        this.startPos.x += rand < 0.33 ? -1 : rand < 0.66 ? 0 : 1;
-    };
-    this.updatePosition = function() {
-        if(this.sprite.getCurrSpeed() == 1) {
+        x += rand < 0.33 ? -1 : rand < 0.66 ? 0 : 1;
+        this._super(x, y);
+    },
+    updatePosition: function() {
+        if(this.getCurrSpeed() == 1) {
             //one frame before the sprite update
             this.calcNextMove();
             this.isReachHome();
         }
-        this.sprite.updatePosition(true);
-    };
-    this.calcNextMove = function() {
+        this._super(true);
+    },
+    calcNextMove: function() {
         switch (this.state) {
             case GhostState.GHOST_CHASE:
                 this.calcChaseMove();
@@ -77,14 +117,14 @@ var Ghost = function() {
                 console.log("Undefined ghost state");
                 break;
         }
-    };
-    this.isReachHome = function() {
+    },
+    isReachHome: function() {
         //console.log("isReachHome:==state=="  + this.state + " pos.x==" + this.sprite.getPos().x + " pos.y==" + this.sprite.getPos().y);
         if (this.state != GhostState.GHOST_DEAD && this.state != GhostState.GHOST_GO_BACK_HOME) return;
-
-        if ((this.sprite.getPos().y == this.startPos.y || this.sprite.getPos().y == this.startPos.y - 1) &&
-            (this.sprite.getPos().x == this.startPos.x || this.sprite.getPos().x == this.startPos.x - 1 ||
-            this.sprite.getPos().x == this.startPos.x + 1)) {
+        var startPos = this.getStartPos();
+        if ((this.getPos().y == startPos.y || this.getPos().y == startPos.y - 1) &&
+            (this.getPos().x == startPos.x || this.getPos().x == this.startPos.x - 1 ||
+            this.getPos().x == this.startPos.x + 1)) {
             //console.log("reached home:==" + this.state + " game state==" + gameModel.getState());
             if(this.state == GhostState.GHOST_DEAD) {
                 if(gameModel.getState() == GameState.GAME_RUN) {
@@ -99,13 +139,13 @@ var Ghost = function() {
             else
                 this.updateState(GhostState.GHOST_STAY_AT_HOME);
         }
-    };
-    this.calcChaseMove = function() {
+    },
+    calcChaseMove: function() {
         var destPos = getPackmanPos();
         var directions = this.getPrioritisedMoves(destPos);
         this.makePrioritisedMove(directions);
-    };
-    this.calcEscapeMove = function() {
+    },
+    calcEscapeMove: function() {
         var destPos = getPackmanPos();
         var directions = this.getPrioritisedMoves(destPos);
 
@@ -119,17 +159,17 @@ var Ghost = function() {
         directions[3] = tmpDir;
 
         this.makePrioritisedMove(directions);
-    };
-    this.calcRandomMove = function() {
+    },
+    calcRandomMove: function() {
         var directions = this.getNotPrioritisedMoves();
         this.makePrioritisedMove(directions);
-    };
-    this.calcGoHomeMove = function() {
+    },
+    calcGoHomeMove: function() {
         var gatePos = getMazeGateTile();
         var directions = this.getPrioritisedMoves(gatePos);
         this.makePrioritisedMove(directions);
-    };
-    this.calcStayHomeMove = function() {
+    },
+    calcStayHomeMove: function() {
         var indexY1 = 0, indexY2 = 1;
         if(Math.random() > 0.5) {
             indexY1 = 1;
@@ -141,8 +181,8 @@ var Ghost = function() {
         directions[indexY1] = Direction.DIR_RIGHT;
         directions[indexY2] = Direction.DIR_LEFT;
         this.makePrioritisedMove(directions);
-    };
-    this.updateState = function(newState) {
+    },
+    updateState: function(newState) {
         switch(newState) {
             case GhostState.GHOST_STRAY:
             case GhostState.GHOST_CHASE:
@@ -161,8 +201,8 @@ var Ghost = function() {
                 return;
         }
         this.state = newState;
-    };
-    this.getPrioritisedMoves = function(destPos) {
+    },
+    getPrioritisedMoves: function(destPos) {
         var indexX = 0, indexY = 1;
         var dx = this.sprite.getPos().x - destPos.x, dy = this.sprite.getPos().y - destPos.y;
 
@@ -201,8 +241,8 @@ var Ghost = function() {
             directions[indexX + 2] = Direction.DIR_UP;
         }
         return(directions);
-    };
-    this.getNotPrioritisedMoves = function() {
+    },
+    getNotPrioritisedMoves: function() {
         var randDirs = [Direction.DIR_UP, Direction.DIR_DOWN, Direction.DIR_LEFT, Direction.DIR_RIGHT];
         var directions = [];
         for (var i=0; i<Direction.DIR_MAX-1; i++)
@@ -220,8 +260,8 @@ var Ghost = function() {
             directions[i] = randDirs[k];
         }
         return(directions);
-    };
-    this.makePrioritisedMove = function(directions) {
+    },
+    makePrioritisedMove: function(directions) {
         var allowChangeDirection = Math.random() < 0.1 ? true:false;
         for(var i=0; i<Direction.DIR_MAX-1; i++) {
             if(this.sprite.isMoveAllowed(directions[i], true)) {
@@ -231,16 +271,13 @@ var Ghost = function() {
                 }
             }
         }
-    };
-    this.changeState = function(state, speed) {
+    },
+    changeState: function(state, speed) {
         this.sprite.changeSpeed(speed);
         this.state = state;
-    };
-    this.getState = function() {
+    },
+    getState: function() {
         return(this.state);
-    };
-    this.getDeltaPos = function() {
-        return(this.sprite.getDeltaPos());
-    };
+    }
 
-};
+});

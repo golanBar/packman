@@ -25,9 +25,9 @@ var GameModel = function() {
         this.state = GameState.GAME_RUN;
         maze.init(new Rect(Properties.MAZE_RECT.x, Properties.MAZE_RECT.y, Properties.MAZE_RECT.width, Properties.MAZE_RECT.height));
         maze.setTilesImages();
-        packman.init();
+        packman.reset();
         for(var i=0; i<getNumGhosts(this.level); i++) {
-            ghosts[i].init(getghostChaseSpeed(this.level));
+            ghosts[i].reset(getghostChaseSpeed(this.level));
             this.killedGhosts[i] = false;
         }
         if(this.level==0) {
@@ -65,24 +65,32 @@ var GameModel = function() {
 
     };
     this.releaseGhosts = function() {
+        if(this.numReleasedGhosts >= getNumGhosts(this.level)) {
+            clearTimeout(this.varTimeoutRelease);
+            return;
+        }
         if(this.state == GameState.GAME_PACKMAN_POWER || this.state == GameState.GAME_PACKMAN_CHASE) {
             ghosts[this.numReleasedGhosts].changeState(GhostState.GHOST_ESCAPE, Properties.GHOST_SPEED.escape);
         }
-        else {
-            if(this.state == GameState.GAME_RUN) //when packman is killed all ghosts must return home before game flow continues
+        else if(this.state == GameState.GAME_RUN) //when packman is killed all ghosts must return home before game flow continues
                 ghosts[this.numReleasedGhosts].changeState(GhostState.GHOST_STRAY, getghostChaseSpeed(this.level));
-        }
         if(++this.numReleasedGhosts < getNumGhosts(this.level)) {
             var self = this;
             this.varTimeoutRelease = setTimeout(function () {self.releaseGhosts()}, getGhostReleaseMS(self.level, self.numReleasedGhosts));
         }
     };
     this.stopGhostsStray = function() {
-        if(this.state != GameState.GAME_PACKMAN_POWER && this.state != GameState.GAME_PACKMAN_CHASE) {
-            if(getGhostState(this.numStopStrayGhosts) == GhostState.GHOST_STRAY)
-                ghosts[this.numStopStrayGhosts].changeState(GhostState.GHOST_CHASE, getghostChaseSpeed(this.level));
+        if(this.numStopStrayGhosts >= getNumGhosts(this.level)) {
+            clearTimeout(this.varTimeoutStopStray);
+            return;
         }
-        if(++this.numStopStrayGhosts < getNumGhosts(this.level)) {
+        if(this.state != GameState.GAME_PACKMAN_POWER && this.state != GameState.GAME_PACKMAN_CHASE) {
+            if(getGhostState(this.numStopStrayGhosts) == GhostState.GHOST_STRAY) {
+                ghosts[this.numStopStrayGhosts].changeState(GhostState.GHOST_CHASE, getghostChaseSpeed(this.level));
+                ++this.numStopStrayGhosts;
+            }
+        }
+        if(this.numStopStrayGhosts < getNumGhosts(this.level)) {
             var self = this;
             this.varTimeoutStopStray = setTimeout(function () {self.stopGhostsStray()}, getGhostStopStrayMS(self.level, self.numReleasedGhosts));
         }
@@ -232,7 +240,7 @@ var GameModel = function() {
         this.varTimeoutRestartGhostChase = setTimeout(function(){self.restartGhostsChase()}, Properties.INTERVALS.ghostsStopEscapeMS);
     };
     this.restartGhostsChase = function() {
-        console.log("restartGhostsChase:==" + ghosts[0].getState() + " " + ghosts[1].getState() + " " + ghosts[2].getState() + " " + ghosts[3].getState() + " this.state==" + this.state);
+        //console.log("restartGhostsChase:==" + ghosts[0].getState() + " " + ghosts[1].getState() + " " + ghosts[2].getState() + " " + ghosts[3].getState() + " this.state==" + this.state);
         for(i=0; i<getNumGhosts(this.level); i++) {
             if(ghosts[i].getState() == GhostState.GHOST_STOP_ESCAPE) {
                 if (i < this.numStopStrayGhosts)
@@ -241,7 +249,7 @@ var GameModel = function() {
                     ghosts[i].changeState(GhostState.GHOST_STRAY, getghostChaseSpeed(this.level));
             }
             else if(ghosts[i].getState() == GhostState.GHOST_STAY_AT_HOME && this.state != GameState.GAME_PACKMAN_KILLED) {
-                console.log("let " + i + "chase" + this.numStopStrayGhosts + " " + this.numReleasedGhosts);
+                //console.log("let " + i + "chase" + this.numStopStrayGhosts + " " + this.numReleasedGhosts);
                 if (i < this.numStopStrayGhosts)
                     ghosts[i].changeState(GhostState.GHOST_CHASE, getghostChaseSpeed(this.level));
                 else if (i < this.numReleasedGhosts)
@@ -260,20 +268,20 @@ var GameModel = function() {
             if(this.checkGameOver()) {
                 return;
             }
-            console.log("checkContinueAfterPackmanKilled gamerun");
+            //console.log("checkContinueAfterPackmanKilled gamerun");
             this.state = GameState.GAME_RUN;
             this.numConsecutiveKilledGhosts = 0;
             this.ispillActivated = false;
             clearTimeout(this.varTimeoutStopGhostEscape);
             clearTimeout(this.varTimeoutRestartGhostChase);
-            packman.init();
+            packman.reset();
             for(var i=0; i<getNumGhosts(this.level); i++) {
                 this.killedGhosts[i] = false;
                 if(i<this.numStopStrayGhosts)
                     ghosts[i].changeState(GhostState.GHOST_CHASE, getghostChaseSpeed(this.level));
                 else if(i<this.numReleasedGhosts)
                     ghosts[i].changeState(GhostState.GHOST_STRAY, getghostChaseSpeed(this.level));
-                console.log("checkContinueAfterPackmanKilled: i=" + i + " state==" + ghosts[i].getState());
+                //console.log("checkContinueAfterPackmanKilled: i=" + i + " state==" + ghosts[i].getState());
             }
 
         }

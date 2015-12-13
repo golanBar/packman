@@ -1,6 +1,10 @@
 /**
  * Created by Golan Bar on 16-Jun-15.
  */
+
+var canvas = document.getElementById("myCanvas");
+var context = canvas.getContext("2d");
+
 var gameModel = new GameModel();
 var maze = new Maze();
 var packman = new Packman();
@@ -10,14 +14,10 @@ for(var i=0; i<Properties.MAX_GHOSTS; i++)
 
 var IntervalVar ;
 var paused = false;
-var imgIndex = 0;
-
-var canvas = document.getElementById("myCanvas");
-var context = canvas.getContext("2d");
+var gameOverImgIndex = 0;
 
 var BGImg = new Image();
 BGImg.src = 'images/game_bg.png';
-
 var GameOverImg1 = new Image();
 GameOverImg1.src = 'images/gameOver1.png';
 var GameOverImg2 = new Image();
@@ -25,7 +25,6 @@ GameOverImg2.src = 'images/gameOver2.png';
 var GameOverImg3 = new Image();
 var GameOverImg4 = new Image();
 var GameOverImg5 = new Image();
-
 
 window.addEventListener("keydown", handleKeyboard, false);
 window.onload = function() {
@@ -50,13 +49,15 @@ function gameLoop() {
             break;
         case GameState.GAME_OVER:
             paused = true;
-            imgIndex = 0;
+            gameOverImgIndex = 0;
             drawGameOver();
+            persistScore();
             return;
         case GameState.GAME_COMPLETED:
             paused = true;
-            imgIndex = 0;
+            gameOverImgIndex = 0;
             drawGameCompleted();
+            persistScore();
             return;
         case GameState.GAME_PACKMAN_KILLED:
             for(i=0; i<getNumGhosts(gameModel.getLevel()); i++) {
@@ -112,14 +113,14 @@ function drawGameOver() {
 }
 
 function redrawGameOverImages() {
-    GameOverImg3.src = ++imgIndex<3 ? 'images/ghost0.png':'images/ghost1.png';
-    GameOverImg4.src = imgIndex<3 ? 'images/ghost_escape0.png':'images/ghost_escape1.png';
-    GameOverImg5.src = imgIndex<3 ? 'images/ghost_killed0.png':'images/ghost_killed1.png';
+    GameOverImg3.src = ++gameOverImgIndex<3 ? 'images/ghost0.png':'images/ghost1.png';
+    GameOverImg4.src = gameOverImgIndex<3 ? 'images/ghost_escape0.png':'images/ghost_escape1.png';
+    GameOverImg5.src = gameOverImgIndex<3 ? 'images/ghost_killed0.png':'images/ghost_killed1.png';
     context.drawImage(GameOverImg3, 120, 500);
     context.drawImage(GameOverImg4, 340, 500);
     context.drawImage(GameOverImg5, 540, 500);
 
-    if(imgIndex >= 6) imgIndex = 0;
+    if(gameOverImgIndex >= 6) gameOverImgIndex = 0;
 }
 
 function drawLevelCompleted() {
@@ -212,23 +213,11 @@ function handleKeyboard(e) {
     }
 }
 
-
-
-/*function animate() {
-    reqAnimFrame = window.mozRequestAnimationFrame    ||
-        window.requestAnimationFrame ||
-        window.msRequestAnimationFrame     ||
-        window.oRequestAnimationFrame
-    ;
-    reqAnimFrame(animate);
-    draw();
+function persistScore(){
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.open("POST", "//packmanapp-golanbar.rhcloud.com/persistScore/", true);
+    xmlHttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    /*xmlHttp.onreadystatechange = handleReadyStateChange;*/
+    xmlHttp.send("score=" + gameModel.getScore() + "&username=" + currUserName);
 }
-
-function draw() {
-    context.clearRect(0, 0, 720, 576);
-    context.drawImage(BGImg, 0, 0);
-    maze.draw(context);
-    packman.draw(context);
-}*/
-
 

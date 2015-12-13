@@ -33,10 +33,16 @@
       </svg>
     </div>
 
+    <%--winning animation--%>
+    <div id="winning_stage" style="display:none"></div>
+    <script type="text/javascript" src="animation/Fireworks.js"></script>
+
     <script type='text/javascript' src='defs/Properties.js'></script>
     <script type='text/javascript' src='defs/Enums.js'></script>
     <script type='text/javascript' src='defs/Levels.js'></script>
     <script type='text/javascript' src='model/Utils.js'></script>
+    <script type='text/javascript' src='model/InheritanceUtil.js'></script>
+    <script type='text/javascript' src='model/Entity.js'></script>
     <script type='text/javascript' src='model/Packman.js'></script>
     <script type='text/javascript' src='model/Ghost.js'></script>
     <script type='text/javascript' src='model/GameModel.js'></script>
@@ -45,10 +51,8 @@
     <script type='text/javascript' src='animation/Fireworks.js'></script>
     <script type='text/javascript' src='Controller.js' charset="utf-8"></script>
 
-    <%--winning animation--%>
-    <div id="winning_stage" style="display:none"></div>
-    <script type="text/javascript" src="animation/Fireworks.js"></script>
-
-
+    <script type="text/javascript">
+      var currUserName = "<%= request.getParameter("username")  %>";
+    </script>
   </body>
 </html>

@@ -1,69 +1,63 @@
 /**
  * Created by Golan Bar on 17-Jun-15.
  */
-var Packman = function() {
-    this.img = new Image();
-    this.imgIndex;
-    this.sprite = new Sprite();
-    this.lives;
-    this.startPos;
-    this.isAlive;
-
-    this.init = function() {
+var Packman = Entity.extend({
+    init: function(){
+        this._super();
+        this.loadImages();
+        this.lives = 0;
+        this.reset();
+    },
+    loadImages: function() {
+        this.packmanImgs = [];
+        this.packmanKilledImgs = [];
+        for(var i=0; i<2; i++) {
+            this.packmanImgs[i] = new Image();
+            this.packmanImgs[i].src = 'images/packman' + i + '.png';
+        }
+        for(var i=0; i<3; i++) {
+            this.packmanKilledImgs[i] = new Image();
+            this.packmanKilledImgs[i].src = 'images/packman_killed' + i + '.png';
+        }
+    },
+    reset: function() {
         this.isAlive = true;
-        this.sprite.init(this.startPos, Properties.PACKMAN_SPEED.normal, false);
-        this.imgIndex = 0;
-    };
-    this.draw = function(context) {
-        var deltaPos = this.sprite.getDeltaPos();
-        deltaPos.x = deltaPos.x*Properties.TILE_HEIGHT+ Properties.MAZE_RECT.x;
-        deltaPos.y = deltaPos.y*Properties.TILE_WIDTH + Properties.MAZE_RECT.y;
+        this.resetSprite(Properties.PACKMAN_SPEED.normal, false);
+        this.setImgIndex(0);
+    },
+    draw: function(context) {
+        var pos = this.getNewPos();
+        var imgIndex = this.getImgIndex();
         if(Boolean(this.isAlive)) {
-            var imgIndexStr = this.imgIndex < Properties.CHANGE_IMG_DURATION ? '0':'1';
-            this.img.src = 'images/packman' + imgIndexStr + '.png';
-            if(++this.imgIndex >= Properties.CHANGE_IMG_DURATION*2)
-                this.imgIndex = 0;
+            var i = imgIndex < Properties.CHANGE_IMG_DURATION ? 0:1;
+            this.setImgIndex(imgIndex+1);
+            if(imgIndex+1 >= Properties.CHANGE_IMG_DURATION*2)
+                this.setImgIndex(0);
+            context.drawImage(this.packmanImgs[i],  pos.x, pos.y);
         }
         else {
-            imgIndexStr = this.imgIndex<Properties.CHANGE_IMG_DURATION*3 ? '0':this.imgIndex<Properties.CHANGE_IMG_DURATION*6 ? '1':'2';
-            this.img.src = 'images/packman_killed' + imgIndexStr + '.png';
-            if(++this.imgIndex >= Properties.CHANGE_IMG_DURATION*9)
+            var i = imgIndex<Properties.CHANGE_IMG_DURATION*3 ? 0:imgIndex<Properties.CHANGE_IMG_DURATION*6 ? 1:2;
+            this.setImgIndex(imgIndex+1);
+            if(imgIndex+1 >= Properties.CHANGE_IMG_DURATION*9)
                 return;
+            context.drawImage(this.packmanKilledImgs[i],  pos.x, pos.y);
         }
-        context.drawImage(this.img,  deltaPos.x, deltaPos.y);
-    };
-    this.updatePosition = function() {
-        this.sprite.updatePosition(false);
-        var prevPos = this.sprite.getPrevPos();
-        return(updateMazeTile(prevPos));
-
-    };
-    this.changeDirection = function(newDirection) {
-        this.sprite.changeDirection(newDirection);
-    };
-    this.changeSpeed = function(newSpeed) {
-        this.sprite.changeSpeed(newSpeed);
-    };
-    this.kill = function() {
+    },
+    getLives: function() {
+        return(this.lives);
+    },
+    setLives: function(numLives) {
+        this.lives = numLives;
+    },
+    kill: function() {
         if(Boolean(this.isAlive)) {
             this.isAlive = false;
             this.lives--;
         }
-    };
-    this.setStartPos = function(x, y) {
-        this.startPos = new Point(x, y);
-    };
-    this.getPos = function() {
-        return(this.sprite.getPos());
-    };
-    this.getDeltaPos = function() {
-        return(this.sprite.getDeltaPos());
-    };
-    this.getLives = function() {
-        return(this.lives);
-    };
-    this.setLives = function(numLives) {
-        this.lives = numLives;
-    };
-
-};
+    },
+    updatePosition: function() {
+        this._super(false);
+        var prevPos = this.getPrevPos();
+        return(updateMazeTile(prevPos));
+    }
+});
