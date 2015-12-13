@@ -1,6 +1,4 @@
-/**
- * Created by Golan Bar on 28-Jun-15.
- */
+// Original JavaScript code by Chirp Internet: www.chirp.com.au
 
     var num_launchers = 12;
     var num_flares = 20;
