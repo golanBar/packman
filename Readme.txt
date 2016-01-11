@@ -1,6 +1,6 @@
 All javascript packman project.
 written by Golan bar
-17/11/15
+11/01/16
 
 Fixed issues:
  - 13.12.15 sometimes ghosts don't switch into escape mode after packman eats a pill. inconsistent.
