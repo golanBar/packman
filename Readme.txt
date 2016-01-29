@@ -8,3 +8,5 @@ Fixed issues:
 
  Known issues:
   - in level 4, ghosts may take the long way home after packman was killed. 
+  
+  edited branch 1
