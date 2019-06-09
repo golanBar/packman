@@ -21,7 +21,7 @@ var Entity = Class.extend({
         return(this.startPos);
     },
     resetSprite: function(speed, useRandomSpeed){
-        this.sprite.init(this.startPos.x, this.startPos.y, speed, useRandomSpeed);
+        this.sprite.init(this.startPos, speed, useRandomSpeed);
     },
     updatePosition: function(passGate) {
         this.sprite.updatePosition(passGate);
